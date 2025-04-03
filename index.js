@@ -665,13 +665,39 @@ const client = new Client({
   }
 });
 
+const fs = require('fs');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
+const express = require('express'); // Adicionando o Express
+
+// Configura o Express para manter o container ativo
+const app = express();
+const port = process.env.PORT || 3000;
+app.get('/', (req, res) => {
+  res.send('Bot está rodando!');
+});
+app.listen(port, () => {
+  console.log(`Servidor web rodando na porta ${port}`);
+});
+
+// Variável para controlar a impressão do QR Code apenas uma vez
+let qrPrinted = false;
+
+// Inicializa o client do WhatsApp com as opções necessárias para o Puppeteer
+const client = new Client({
+  authStrategy: new LocalAuth(),
+  puppeteer: {
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  }
+});
+
 // Evento para quando o QR code é gerado
 client.on('qr', (qr) => {
   if (!qrPrinted) {
-    // Opção 1: Imprimir o QR code no terminal (com opção 'small: false' para melhor legibilidade)
+    // Imprime o QR code no terminal com melhor legibilidade
     qrcode.generate(qr, { small: false });
-    
-    // Opção 2 (alternativa): Gerar uma URL de Data URL e imprimir no log
+    // Gera uma Data URL para facilitar a visualização (opcional)
     QRCode.toDataURL(qr, (err, url) => {
       if (err) {
         console.error('Erro ao gerar QR Code:', err);
@@ -683,23 +709,23 @@ client.on('qr', (qr) => {
   }
 });
 
-// Quando autenticado, podemos resetar a flag para futuras reconexões, se necessário
+// Evento de autenticação
 client.on('authenticated', () => {
   console.log('Cliente autenticado com sucesso!');
 });
 
-// Em caso de falha na autenticação, pode-se resetar a flag para permitir novo QR code
+// Em caso de falha na autenticação, reseta a flag para permitir novo QR code
 client.on('auth_failure', () => {
   console.log('Falha na autenticação, tentando novamente...');
   qrPrinted = false;
 });
 
+// Quando o client estiver pronto
 client.on('ready', () => {
   console.log('Cliente WhatsApp pronto!');
 });
 
-// ... (o restante do seu código permanece inalterado)
-
+// Lida com as mensagens recebidas (seu código de processamento permanece o mesmo)
 client.on('message', (msg) => {
   // Seu código para tratar as mensagens
 });
