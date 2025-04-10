@@ -126,18 +126,24 @@ function sendReply(msg, text) {
 }
 
 // Função para encaminhamento no fluxo financeiro:
+// Envia os dados para o analista com o número +5511995967245 e inclui um link clicável para contato com o cliente.
 function encaminharParaAnalista(msg, conversation) {
-  const analistaNumero = '5511999939547';
-  const analistaLink = `https://wa.me/${analistaNumero}`;
+  const analistaNumero = '5511995967245';
+  // Obtém o número do cliente removendo o sufixo '@c.us'
+  const clienteNumero = msg.from.replace('@c.us', '');
+  // Cria o link clicável para o WhatsApp utilizando o número do cliente
+  const clienteLink = `https://wa.me/${clienteNumero}`;
+  // Monta a mensagem com as informações do atendimento e o link para contato com o cliente
   const info = `Encaminhamento de atendimento (Financeiro):
 Nome: ${conversation.name || 'N/A'}
 ${conversation.financeiroOption ? `Opção: ${conversation.selectedPartner} - ${conversation.financeiroOption}` : ''}
 ${conversation.parcela ? `Parcela: ${conversation.parcela}` : ''}
 ${conversation.motivo ? `Motivo: ${conversation.motivo}` : ''}
 Documento: ${conversation.notaFiscal || 'N/A'}
-Contato: ${msg.from.replace('@c.us', '')}
-Número do Analista: ${analistaLink}`;
+Contato: ${clienteNumero}
+Link para contato com o Cliente: ${clienteLink}`;
   
+  // Envia os dados para o consultor
   client.sendMessage(`${analistaNumero}@c.us`, info);
   sendReply(msg, "Seu atendimento foi registrado, agora é só aguardar por gentileza que um analista entrará em contato.");
 }
